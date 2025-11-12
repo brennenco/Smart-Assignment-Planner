@@ -1,38 +1,17 @@
-
+Create DATABASE smart_assignment_planner;
+USE smart_assignment_planner;
 
 -- Users
-INSERT INTO User (email, name) VALUES
-('alice@example.com', 'Alice Johnson'),
-('bob@example.com', 'Bob Smith'),
-('carol@example.com', 'Carol Lee'),
-('dave@example.com', 'Dave Kim');
+Create Table If Not Exists User (email VARCHAR(100) PRIMARY KEY, name VARCHAR(100));
 
 -- Courses
-INSERT INTO Course (course_name) VALUES
-('CS101 - Intro to Programming'),
-('MATH201 - Calculus II'),
-('HIST150 - World History'),
-('PHYS101 - Physics I');
+Create Table if Not Exists Course(course_id INT AUTO_INCREMENT PRIMARY KEY, course_name VARCHAR(100) NOT NULL);
 
--- Takes relationships
-INSERT INTO Takes (email, course_id) VALUES
-('alice@example.com', 1),
-('alice@example.com', 2),
-('bob@example.com', 1),
-('bob@example.com', 3),
-('carol@example.com', 2),
-('carol@example.com', 4),
-('dave@example.com', 1),
-('dave@example.com', 4);
+-- Enrollments (which student takes which course)
+Create Table If Not Exists Takes(email VARCHAR(100), course_id INT, grade VARCHAR(5), 
+PRIMARY KEY (email, course_id), 
+FOREIGN KEY (email) REFERENCES User(email),
+FOREIGN KEY (course_id) REFERENCES Course(course_id));
 
--- Assignments
-INSERT INTO Assignment (course_id, name, due_date, completion_status) VALUES
-(1, 'Homework 1', '2025-11-15', FALSE),
-(1, 'Project 1', '2025-11-20', FALSE),
-(1, 'Midterm Exam', '2025-11-25', FALSE),
-(2, 'Calculus Homework 1', '2025-11-17', TRUE),
-(2, 'Calculus Homework 2', '2025-11-22', FALSE),
-(3, 'Essay 1', '2025-11-18', TRUE),
-(3, 'Essay 2', '2025-11-23', FALSE),
-(4, 'Lab Report 1', '2025-11-16', TRUE),
-(4, 'Lab Report 2', '2025-11-21', FALSE);
+Create Table If Not Exists Assignment(assignment_id INT AUTO_INCREMENT PRIMARY KEY, Course_id INT, name VARCHAR(100) NOT NULL, due_date DATE, completion_status VARCHAR(20), type VARCHAR(20), FOREIGN KEY (course_id) REFERENCES Course(course_id));
+
