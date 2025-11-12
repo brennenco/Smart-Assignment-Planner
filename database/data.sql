@@ -1,5 +1,4 @@
 
-
 -- Users
 INSERT INTO User (email, name) VALUES
 ('alice@example.com', 'Alice Johnson'),
