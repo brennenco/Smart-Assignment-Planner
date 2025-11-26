@@ -1,6 +1,6 @@
 <?php
 $servername = "localhost";
-$username   = "emilio";
+$username   = "root";
 $password   = "StrongPass123!";
 $database   = "smart_assignment_planner";
 
