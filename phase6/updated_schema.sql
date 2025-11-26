@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS `User`;
 CREATE TABLE `User` (
     email VARCHAR(100) PRIMARY KEY,
     name VARCHAR(100) NOT NULL
-) ENGINE=InnoDB;
+);
 
 -- ============================================================
 -- COURSES TABLE
@@ -22,7 +22,7 @@ DROP TABLE IF EXISTS Course;
 CREATE TABLE Course (
     course_id INT AUTO_INCREMENT PRIMARY KEY,
     course_name VARCHAR(150) NOT NULL
-) ENGINE=InnoDB;
+);
 
 -- ============================================================
 -- TAKES TABLE (USER ENROLLMENTS)
@@ -40,7 +40,7 @@ CREATE TABLE Takes (
     FOREIGN KEY (course_id) REFERENCES Course(course_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-) ENGINE=InnoDB;
+);
 
 -- ============================================================
 -- ASSIGNMENTS TABLE
@@ -57,4 +57,4 @@ CREATE TABLE Assignment (
     FOREIGN KEY (course_id) REFERENCES Course(course_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
-) ENGINE=InnoDB;
+);
