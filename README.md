@@ -14,10 +14,12 @@ This project started as a class assignment and is now being redeveloped as part 
 - Frontend: (in active development)
 - **Backend:** (in active development) Java  
 - **Database:** (in active development) MySQL
-- **Tools:** GitHub, Eclipse/IDE, Drawio (for diagrams)
+- **Tools:** MySQL, GitHub, Eclipse/IDE, Drawio (for diagrams)
 
 ## Current State
-- UI prototypes and EER diagrams are complete
+- UI prototypes created
+- EER diagram and relational schema is complete
+- baseline schema is created
 - Original class code is included for reference
 - Full online version is under development
 
@@ -31,5 +33,6 @@ This project started as a class assignment and is now being redeveloped as part 
 - project management
 - UI/UX design
 - Database modeling (EER)
+- Schema design in mySQL
 - Java programming and code refactoring
 - Problem-solving in full-stack development
