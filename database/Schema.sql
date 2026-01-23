@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `assignment`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `assignment` (
   `assignment_id` int NOT NULL AUTO_INCREMENT,
-  `status` tinyint(1) NOT NULL,
+  `status` tinyint(1) NOT NULL, -- 0 == not completed, 1 = completed
   `title` varchar(150) NOT NULL,
   `description` text,
   `due_date` date NOT NULL,
