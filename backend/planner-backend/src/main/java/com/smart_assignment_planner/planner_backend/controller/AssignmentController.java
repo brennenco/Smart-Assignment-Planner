@@ -1,14 +1,19 @@
 package com.smart_assignment_planner.planner_backend.controller;
 
+import com.smart_assignment_planner.planner_backend.dto.CreateAssignmentRequest;
+import com.smart_assignment_planner.planner_backend.dto.UpdateAssignmentRequest;
 import com.smart_assignment_planner.planner_backend.model.Assignment;
+import com.smart_assignment_planner.planner_backend.model.User;
+import com.smart_assignment_planner.planner_backend.security.SecurityUtil;
 import com.smart_assignment_planner.planner_backend.service.AssignmentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/assignments")
+@RequestMapping("/api/assignments")
 public class AssignmentController {
 
     private final AssignmentService assignmentService;
@@ -17,38 +22,40 @@ public class AssignmentController {
         this.assignmentService = assignmentService;
     }
 
-    // GET /assignments
     @GetMapping
-    public List<Assignment> getAllAssignments() {
-        return assignmentService.getAllAssignments();
+    public List<Assignment> list() {
+        boolean admin = SecurityUtil.isAdmin();
+        Integer uid = SecurityUtil.currentUserId();
+        if (admin) {
+            return assignmentService.getAllAssignments();
+        }
+        return assignmentService.getAssignmentsForUser(uid);
     }
 
-    // GET /assignments/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Assignment> getAssignmentById(@PathVariable Integer id) {
-        return assignmentService.getAssignmentById(id)
+    public ResponseEntity<Assignment> getById(@PathVariable Integer id) {
+        return assignmentService.getAssignmentForViewer(id, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /assignments
     @PostMapping
-    public Assignment createAssignment(@RequestBody Assignment assignment) {
-        return assignmentService.createAssignment(assignment);
+    public ResponseEntity<Assignment> create(@RequestBody CreateAssignmentRequest request) {
+        User owner = SecurityUtil.currentUserEntity();
+        Assignment created = assignmentService.createForUser(request, owner);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // PUT /assignments/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Assignment> updateAssignment(@PathVariable Integer id, @RequestBody Assignment assignment) {
-        return assignmentService.updateAssignment(id, assignment)
+    public ResponseEntity<Assignment> update(@PathVariable Integer id, @RequestBody UpdateAssignmentRequest request) {
+        return assignmentService.updateAssignment(id, request, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /assignments/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAssignment(@PathVariable Integer id) {
-        if (assignmentService.deleteAssignment(id)) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (assignmentService.deleteAssignment(id, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();

@@ -1,5 +1,7 @@
 package com.smart_assignment_planner.planner_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -25,8 +27,13 @@ public class Assignment {
 
     private Integer pointsEarned;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "assignment_type")
+    private AssignmentType assignmentType = AssignmentType.ASSIGNMENT;
+
     @ManyToOne
     @JoinColumn(name = "course_id")
+    @JsonIgnore // Prevent infinite JSON recursion (Assignment -> course -> assignments -> ...)
     private Course course;
 
     public Integer getAssignmentId() {
@@ -91,6 +98,25 @@ public class Assignment {
 
     public void setPointsEarned(Integer pointsEarned) {
         this.pointsEarned = pointsEarned;
+    }
+
+    public AssignmentType getAssignmentType() {
+        return assignmentType;
+    }
+
+    public void setAssignmentType(AssignmentType assignmentType) {
+        this.assignmentType = assignmentType;
+    }
+
+    @JsonProperty("courseId")
+    public Integer getCourseIdForJson() {
+        return course != null ? course.getCourseId() : null;
+    }
+
+    /** Course title for API consumers (course entity is not serialized). */
+    @JsonProperty("courseName")
+    public String getCourseNameForJson() {
+        return course != null ? course.getCourseName() : null;
     }
 
     public Course getCourse() {

@@ -1,14 +1,18 @@
 package com.smart_assignment_planner.planner_backend.controller;
 
+import com.smart_assignment_planner.planner_backend.dto.CreateCourseRequest;
 import com.smart_assignment_planner.planner_backend.model.Course;
+import com.smart_assignment_planner.planner_backend.model.User;
+import com.smart_assignment_planner.planner_backend.security.SecurityUtil;
 import com.smart_assignment_planner.planner_backend.service.CourseService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/courses")
+@RequestMapping("/api/courses")
 public class CourseController {
 
     private final CourseService courseService;
@@ -17,38 +21,40 @@ public class CourseController {
         this.courseService = courseService;
     }
 
-    // GET /courses
     @GetMapping
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    public List<Course> list() {
+        boolean admin = SecurityUtil.isAdmin();
+        Integer uid = SecurityUtil.currentUserId();
+        if (admin) {
+            return courseService.getAllCourses();
+        }
+        return courseService.getCoursesForUser(uid);
     }
 
-    // GET /courses/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Integer id) {
-        return courseService.getCourseById(id)
+    public ResponseEntity<Course> getById(@PathVariable Integer id) {
+        return courseService.getCourseForViewer(id, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /courses
     @PostMapping
-    public Course createCourse(@RequestBody Course course) {
-        return courseService.createCourse(course);
+    public ResponseEntity<Course> create(@RequestBody CreateCourseRequest request) {
+        User owner = SecurityUtil.currentUserEntity();
+        Course created = courseService.createForUser(request, owner);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // PUT /courses/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable Integer id, @RequestBody Course course) {
-        return courseService.updateCourse(id, course)
+    public ResponseEntity<Course> update(@PathVariable Integer id, @RequestBody Course patch) {
+        return courseService.updateCourse(id, patch, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE /courses/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable Integer id) {
-        if (courseService.deleteCourse(id)) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        if (courseService.deleteCourse(id, SecurityUtil.isAdmin(), SecurityUtil.currentUserId())) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
