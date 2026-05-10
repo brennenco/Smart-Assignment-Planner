@@ -1,16 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Planner Backend</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        h1 { color: #2c3e50; }
-        p { color: #34495e; }
-    </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Assignment Planner</title>
+    <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-    <h1>Planner Backend</h1>
-    <p>This is a placeholder page. The backend is running.</p>
+    <header class="app-header">
+        <div>
+            <h1>Smart Assignment Planner</h1>
+            <p id="userGreeting" class="subtitle">Loading…</p>
+        </div>
+        <div class="header-actions">
+            <span id="roleBadge" class="role-badge" hidden></span>
+            <button id="btnAddCourse" type="button" class="btn-secondary">Add course</button>
+            <button id="btnAddAssignment" type="button" class="btn-secondary">Add assignment</button>
+            <button id="refreshBtn" type="button">Refresh</button>
+            <button id="logoutBtn" type="button" class="btn-secondary">Log out</button>
+        </div>
+    </header>
+
+    <main class="layout">
+        <nav class="view-tabs" aria-label="View mode">
+            <button type="button" class="view-tab" data-view="dashboard" aria-selected="false">Dashboard</button>
+            <button type="button" class="view-tab active" data-view="calendar" aria-selected="true">Calendar</button>
+        </nav>
+
+        <div class="global-filters panel">
+            <span class="global-filters-label">Filters (assignments)</span>
+            <div class="filters">
+                <label for="statusFilter">Status</label>
+                <select id="statusFilter">
+                    <option value="all">All</option>
+                    <option value="complete">Complete</option>
+                    <option value="incomplete">Incomplete</option>
+                </select>
+                <label for="searchInput">Search</label>
+                <input id="searchInput" type="text" placeholder="Title or description" />
+            </div>
+        </div>
+
+        <section id="view-dashboard" class="view-panel hidden">
+            <section class="stats-grid">
+                <article class="stat-card" id="statUsersCard">
+                    <h2>Total Users</h2>
+                    <p id="totalUsers">--</p>
+                </article>
+                <article class="stat-card">
+                    <h2>Total Courses</h2>
+                    <p id="totalCourses">--</p>
+                </article>
+                <article class="stat-card">
+                    <h2>Total Assignments</h2>
+                    <p id="totalAssignments">--</p>
+                </article>
+                <article class="stat-card">
+                    <h2>Completed Assignments</h2>
+                    <p id="completedAssignments">--</p>
+                </article>
+            </section>
+
+            <section class="panel">
+                <h2>Assignments</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Course</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Points</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignmentsBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel two-col">
+                <div id="usersSection" class="admin-only" hidden>
+                    <h2>Users <span class="hint">(admin)</span></h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <h2>Courses</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th class="col-owner">Owner user</th>
+                                    <th>Course Name</th>
+                                    <th>Total Points</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursesBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>System Status</h2>
+                <p id="statusText">Loading data...</p>
+            </section>
+        </section>
+
+        <section id="view-calendar" class="view-panel">
+            <section class="panel calendar-panel">
+                <div class="calendar-toolbar">
+                    <div class="calendar-nav">
+                        <button type="button" id="calPrevBtn" class="btn-secondary" aria-label="Previous month">←</button>
+                        <h2 id="calendarMonthLabel" class="calendar-title">Month Year</h2>
+                        <button type="button" id="calNextBtn" class="btn-secondary" aria-label="Next month">→</button>
+                    </div>
+                    <button type="button" id="calTodayBtn" class="btn-secondary">Today</button>
+                </div>
+                <p class="calendar-hint">Assignments appear on their due dates. Use the <strong>Filters</strong> bar above for status and search.</p>
+                <div class="calendar-weekdays" aria-hidden="true">
+                    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+                <div id="calendarSelectedDay" class="calendar-detail" aria-live="polite"></div>
+            </section>
+        </section>
+    </main>
+
+    <div id="modalCourse" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalCourseHeading">
+        <div class="modal-backdrop" data-close="1"></div>
+        <div class="modal-card">
+            <h2 id="modalCourseHeading">New course</h2>
+            <form id="formCourse">
+                <input type="hidden" id="mcEditId" value="" />
+                <label for="mcName">Course name</label>
+                <input id="mcName" type="text" required />
+                <label for="mcPoints">Total points (course)</label>
+                <input id="mcPoints" type="number" min="1" value="1000" required />
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-close="1">Cancel</button>
+                    <button type="submit" id="btnCourseSubmit">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalAssignment" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalAssignmentHeading">
+        <div class="modal-backdrop" data-close="1"></div>
+        <div class="modal-card">
+            <h2 id="modalAssignmentHeading">New assignment / exam</h2>
+            <form id="formAssignment">
+                <input type="hidden" id="maEditId" value="" />
+                <label for="maCourse">Course</label>
+                <select id="maCourse" required></select>
+                <label for="maTitle">Title</label>
+                <input id="maTitle" type="text" required />
+                <label for="maDesc">Description</label>
+                <textarea id="maDesc" rows="3"></textarea>
+                <label for="maDue">Due date</label>
+                <input id="maDue" type="date" required />
+                <label for="maPriority">Priority (1 = highest)</label>
+                <input id="maPriority" type="number" min="1" max="10" value="2" />
+                <label for="maPossible">Points possible</label>
+                <input id="maPossible" type="number" min="0" value="100" required />
+                <label for="maEarned">Points earned (optional)</label>
+                <input id="maEarned" type="number" min="0" />
+                <label for="maType">Type</label>
+                <select id="maType">
+                    <option value="ASSIGNMENT">Assignment</option>
+                    <option value="EXAM">Exam</option>
+                    <option value="QUIZ">Quiz</option>
+                    <option value="OTHER">Other</option>
+                </select>
+                <label class="inline-check"><input id="maDone" type="checkbox" /> Mark as completed</label>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-close="1">Cancel</button>
+                    <button type="submit" id="btnAssignmentSubmit">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="./app.js"></script>
 </body>
 </html>

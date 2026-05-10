@@ -1,0 +1,2 @@
+password123=$2a$10$ST2Wvo260svD/2mM/RMWJeJpHVvu0DsLNEZAd8nMDof0.pn5Xfj52
+admin123=$2a$10$rOT0C2/ERW/jSXn8cgXqMebgWkEWRqjJ6hHfMknRlmLiCWFVg.3pm

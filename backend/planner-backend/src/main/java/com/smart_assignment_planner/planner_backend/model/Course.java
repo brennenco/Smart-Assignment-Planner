@@ -1,5 +1,7 @@
 package com.smart_assignment_planner.planner_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -17,9 +19,12 @@ public class Course {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore // Prevent infinite JSON recursion (Course -> user -> courses -> ...)
     private User user;
 
-    @OneToMany(mappedBy = "course")
+    /** Not exposed in JSON — use GET /api/assignments (scoped by user). */
+    @JsonIgnore
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments;
 
     public Integer getCourseId() {
@@ -52,6 +57,12 @@ public class Course {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    /** For JSON: owner id (user field is ignored to avoid recursion). */
+    @JsonProperty("userId")
+    public Integer getOwnerUserId() {
+        return user != null ? user.getUserId() : null;
     }
 
     public List<Assignment> getAssignments() {
